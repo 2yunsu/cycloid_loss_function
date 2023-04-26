@@ -63,11 +63,6 @@ for i in tqdm(range(100)):  # repeat training for 10 times
     mse_weights_list.append(crr_weights_list)
     mse_bias_list.append(crr_bias_list)
 
-# Compute the mean and variance of the losses and output maps
-mse_losses_mean = np.mean(mse_losses, axis=0)
-mse_maps_mean = np.mean(mse_maps, axis=0)
-weight_mean = np.mean(mse_weights_list, axis=0)
-
 gradients_list = []
 for i in range(len(mse_weights_list)):
     # Cycloid 초기값
@@ -99,32 +94,33 @@ for i in range(len(mse_weights_list)):
         gradients_diff_mean = gradients_diff_mean_1
     gradients_list.append(gradients_diff_mean)
 
-    plt.plot(x_1, cycloid_graph_1_1, label="gradients_diff_mean_1")
-    plt.plot(x_2, cycloid_graph_2_1, label="gradients_diff_mean_2")
-    plt.plot(mse_weights_list[i], mse_losses[i], label="mse_weights_list")
-    plt.xlabel("weight")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.show()
-    print()
+    # plt.plot(x_1, cycloid_graph_1_1, label="gradients_diff_mean_1")
+    # plt.plot(x_2, cycloid_graph_2_1, label="gradients_diff_mean_2")
+    # plt.plot(mse_weights_list[i], mse_losses[i], label="mse_weights_list")
+    # plt.xlabel("weight")
+    # plt.ylabel("Loss")
+    # plt.legend()
+    # plt.show()
+    # print()
 
-min_mean_idx = np.argmin(gradients_list)
-cycl_gradients_diff_mean_min = mse_losses[min_mean_idx]
+min_idx = np.argmin(gradients_list)
+mse_losses_mean_min = mse_losses[min_idx]
+mse_losses_mean = np.mean(mse_losses, axis=0)
 
 # Plot the losses
-plt.plot(mse_losses_mean, label="MSE Loss")
-# # plt.fill_between(np.arange(num_epochs), mse_losses_mean-mse_losses_var, mse_losses_mean+mse_losses_var, alpha=0.2)
-plt.plot(cycl_gradients_diff_mean_min, label="Cycloid Loss Min")
+plt.plot(mse_losses_mean, label="Mean of MSE Loss")
+plt.plot(mse_losses_mean_min, label="Cycloid Loss")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
 plt.show()
 
-plt.plot(mse_weights_list[min_mean_idx], mse_losses[min_mean_idx], label='Cycloid Loss')
-plt.plot(weight_mean, mse_losses_mean, label='MSE Losses Mean')
-# plt.plot(x_1, cycloid_graph_1, label="Cycloid 1")
-plt.plot(x_2, cycloid_graph_2, label="Cycloid 2")
-plt.xlabel("Weight")
-plt.ylabel("Loss")
-plt.legend()
-plt.show()
+# plt.plot(mse_weights_list[min_mean_idx], mse_losses[min_mean_idx], label='Cycloid Loss')
+# plt.plot(weight_mean, mse_losses_mean, label='MSE Losses Mean')
+# # plt.plot(x_1, cycloid_graph_1, label="Cycloid 1")
+# # plt.plot(x_1, cycloid_graph_1_1, label="gradients_diff_mean_1")
+# # plt.plot(x_2, cycloid_graph_2_1, label="gradients_diff_mean_2")
+# plt.xlabel("Weight")
+# plt.ylabel("Loss")
+# plt.legend()
+# plt.show()
