@@ -4,10 +4,18 @@ import matplotlib.pyplot as plt
 import torch.nn.init as init
 import numpy as np
 from tqdm import tqdm
-import math
+import random
 
 def mse_loss(output, target):
     return torch.mean((output - target) ** 2)
+
+#random seed
+random_seed = 3
+torch.manual_seed(random_seed)  # torch
+torch.cuda.manual_seed(random_seed)
+torch.cuda.manual_seed_all(random_seed)  # if use multi-GPU
+np.random.seed(random_seed)  # numpy
+random.seed(random_seed)  # random
 
 #parameter
 num_epochs = 100
@@ -104,6 +112,7 @@ for i in range(len(mse_weights_list)):
         gradients_diff_mean = gradients_diff_mean_1
     gradients_list.append(gradients_diff_mean)
 
+    # #compare gradient graph
     # plt.plot(x_1, cycloid_graph_1_1, label="gradients_diff_mean_1")
     # plt.plot(x_2, cycloid_graph_2_1, label="gradients_diff_mean_2")
     # plt.plot(mse_weights_list[i], mse_losses[i], label="mse_weights_list")
@@ -125,9 +134,9 @@ for i in range(len(min_idx_10)):
 
 #when converge
 print("Top Cycloid Loss function Converge at: ", converged_epochs[min_idx])
-print("Top10 Cycloid Loss function Converge at: ", np.mean(converged_10_list))
+print("Top 5% Cycloid Loss function Converge at: ", np.mean(converged_10_list))
 print("Converge Mean: ", np.mean(converged_epochs))
-print("Top10 Cycloid Loss Varience: ", np.var(converged_10_list))
+print("Top 5% Cycloid Loss Varience: ", np.var(converged_10_list))
 print("MSE Loss Varience: ", np.var(converged_epochs))
 
 # Plot the losses
