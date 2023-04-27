@@ -10,7 +10,7 @@ def mse_loss(output, target):
     return torch.mean((output - target) ** 2)
 
 #random seed
-random_seed = 3
+random_seed = 0
 torch.manual_seed(random_seed)  # torch
 torch.cuda.manual_seed(random_seed)
 torch.cuda.manual_seed_all(random_seed)  # if use multi-GPU
@@ -19,7 +19,7 @@ random.seed(random_seed)  # random
 
 #parameter
 num_epochs = 100
-num_iter = 1000
+num_iter = 10000
 
 # Define the input and target
 x = torch.linspace(-2, 2, 100).view(-1,1)
