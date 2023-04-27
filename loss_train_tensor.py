@@ -4,12 +4,14 @@ import matplotlib.pyplot as plt
 import torch.nn.init as init
 import numpy as np
 from tqdm import tqdm
+import math
 
 def mse_loss(output, target):
     return torch.mean((output - target) ** 2)
 
 #parameter
 num_epochs = 100
+num_iter = 1000
 
 # Define the input and target
 x = torch.linspace(-2, 2, 100).view(-1,1)
@@ -27,11 +29,11 @@ optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 # Train the model
 mse_losses = []
-mse_maps = []
 mse_weights_list = []
 mse_bias_list = []
+converged_epochs = []
 
-for i in tqdm(range(100)):  # repeat training for 10 times
+for i in tqdm(range(num_iter)):
     # Train the model for 100 epochs with MSE Loss
     init.xavier_normal_(model.weight)
     losses = []
@@ -57,9 +59,17 @@ for i in tqdm(range(100)):  # repeat training for 10 times
         # Store the loss
         losses.append(loss.item())
 
+        # Check for convergence
+        if len(converged_epochs) == i:
+            if len(losses) > 1:
+                gradient = losses[-1] - losses[-2] # 현재 epoch과 이전 epoch의 loss 값 차이
+                if abs(gradient) < 1e-2: # 기울기가 0에 가까워질 때마다 converged_epochs 리스트에 epoch 값을 추가
+                    converged_epochs.append(epoch)
+                if epoch == num_epochs-1: # 한 epoch 끝까지 수렴 안 하면 마지막 값을 수렴점으로 지정
+                    converged_epochs.append(epoch)
+
     # Store the losses
     mse_losses.append(losses)
-    mse_maps.append(output.detach().numpy())
     mse_weights_list.append(crr_weights_list)
     mse_bias_list.append(crr_bias_list)
 
@@ -84,8 +94,8 @@ for i in range(len(mse_weights_list)):
     mse_weight_gradients = np.gradient(mse_losses[i], mse_weights_list[i], axis=0) #i번째 Loss 함수의 gradient
 
     #Gradient 차이 계산
-    gradients_diff_1 = abs(mse_weight_gradients - cycl_graph_gradients_1)
-    gradients_diff_2 = abs(mse_weight_gradients - cycl_graph_gradients_2)
+    gradients_diff_1 = abs(mse_weight_gradients - cycl_graph_gradients_1)**2
+    gradients_diff_2 = abs(mse_weight_gradients - cycl_graph_gradients_2)**2
     gradients_diff_mean_1 = np.mean(gradients_diff_1)
     gradients_diff_mean_2 = np.mean(gradients_diff_2)
     if np.mean(gradients_diff_mean_1) >= np.mean(gradients_diff_mean_2):
@@ -107,20 +117,25 @@ min_idx = np.argmin(gradients_list)
 mse_losses_mean_min = mse_losses[min_idx]
 mse_losses_mean = np.mean(mse_losses, axis=0)
 
+min_idx_10 = np.argsort(gradients_list)[:(num_iter//20)] #상위 5% 추출하여 비교
+
+converged_10_list = []
+for i in range(len(min_idx_10)):
+    converged_10_list.append(converged_epochs[min_idx_10[i]])
+
+#when converge
+print("Top Cycloid Loss function Converge at: ", converged_epochs[min_idx])
+print("Top10 Cycloid Loss function Converge at: ", np.mean(converged_10_list))
+print("Converge Mean: ", np.mean(converged_epochs))
+print("Top10 Cycloid Loss Varience: ", np.var(converged_10_list))
+print("MSE Loss Varience: ", np.var(converged_epochs))
+
 # Plot the losses
-plt.plot(mse_losses_mean, label="Mean of MSE Loss")
-plt.plot(mse_losses_mean_min, label="Cycloid Loss")
+plt.plot(mse_losses_mean, label="Mean of MSE Loss", color='red')
+# plt.plot(mse_losses_mean_min, label="Cycloid Loss")
+for i in range(len(converged_10_list)):
+    plt.plot(mse_losses[min_idx_10[i]], color='blue')
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
 plt.show()
-
-# plt.plot(mse_weights_list[min_mean_idx], mse_losses[min_mean_idx], label='Cycloid Loss')
-# plt.plot(weight_mean, mse_losses_mean, label='MSE Losses Mean')
-# # plt.plot(x_1, cycloid_graph_1, label="Cycloid 1")
-# # plt.plot(x_1, cycloid_graph_1_1, label="gradients_diff_mean_1")
-# # plt.plot(x_2, cycloid_graph_2_1, label="gradients_diff_mean_2")
-# plt.xlabel("Weight")
-# plt.ylabel("Loss")
-# plt.legend()
-# plt.show()
