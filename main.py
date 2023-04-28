@@ -19,21 +19,16 @@ random.seed(random_seed)  # random
 
 #parameter
 num_epochs = 100
-num_iter = 10000
+num_iter = 100
 
 # Define the input and target
 x = torch.linspace(-2, 2, 100).view(-1,1)
-target = 2 * x ** 3 - 4 * x ** 2 + 3 * x - 1
+target = 2 * x ** 3 - 4 * x ** 2 + 3 * x - 1 + torch.randn_like(x)
+# target = 3 * x - 1 + torch.randn_like(x)
 
-# Theta of x
+# Theta of Cycloid
 theta_1 = torch.linspace(1 * np.pi, 2 * np.pi, num_epochs).view(-1,1)
 theta_2 = torch.linspace(0, 1 * np.pi, num_epochs).view(-1,1)
-
-# Define the model
-model = torch.nn.Linear(1, 1)
-
-# Define the optimizer
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 # Train the model
 mse_losses = []
@@ -42,8 +37,13 @@ mse_bias_list = []
 converged_epochs = []
 
 for i in tqdm(range(num_iter)):
-    # Train the model for 100 epochs with MSE Loss
-    init.xavier_normal_(model.weight)
+    # Define the model
+    model = torch.nn.Linear(1, 1)
+    model.bias.data.fill_(-1)
+    # init.xavier_normal_(model.weight)
+    # Define the optimizer
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
     losses = []
     crr_weights_list = []
     crr_bias_list = []
@@ -71,7 +71,7 @@ for i in tqdm(range(num_iter)):
         if len(converged_epochs) == i:
             if len(losses) > 1:
                 gradient = losses[-1] - losses[-2] # 현재 epoch과 이전 epoch의 loss 값 차이
-                if abs(gradient) < 1e-2: # 기울기가 0에 가까워질 때마다 converged_epochs 리스트에 epoch 값을 추가
+                if abs(gradient) < 0.05: # 기울기가 0에 가까워질 때마다 converged_epochs 리스트에 epoch 값을 추가
                     converged_epochs.append(epoch)
                 if epoch == num_epochs-1: # 한 epoch 끝까지 수렴 안 하면 마지막 값을 수렴점으로 지정
                     converged_epochs.append(epoch)
@@ -126,7 +126,7 @@ min_idx = np.argmin(gradients_list)
 mse_losses_mean_min = mse_losses[min_idx]
 mse_losses_mean = np.mean(mse_losses, axis=0)
 
-min_idx_10 = np.argsort(gradients_list)[:(num_iter//20)] #상위 5% 추출하여 비교
+min_idx_10 = np.argsort(gradients_list)[:(10)] #상위 5% 추출하여 비교
 
 converged_10_list = []
 for i in range(len(min_idx_10)):
@@ -134,16 +134,24 @@ for i in range(len(min_idx_10)):
 
 #when converge
 print("Top Cycloid Loss function Converge at: ", converged_epochs[min_idx])
-print("Top 5% Cycloid Loss function Converge at: ", np.mean(converged_10_list))
+print("Top 5% Cycloid Loss function Converge Mean at: ", converged_10_list)
+print("Top 5% Cycloid Loss function Converge Mean at: ", np.mean(converged_10_list))
 print("Converge Mean: ", np.mean(converged_epochs))
 print("Top 5% Cycloid Loss Varience: ", np.var(converged_10_list))
 print("MSE Loss Varience: ", np.var(converged_epochs))
 
 # Plot the losses
-plt.plot(mse_losses_mean, label="Mean of MSE Loss", color='red')
+
 # plt.plot(mse_losses_mean_min, label="Cycloid Loss")
+
+for i in range(len(mse_losses)):
+    plt.plot(mse_losses[i], color='blue')
+
 for i in range(len(converged_10_list)):
-    plt.plot(mse_losses[min_idx_10[i]], color='blue')
+    plt.plot(mse_losses[min_idx_10[i]], color='green')
+
+plt.plot(mse_losses_mean, label="Mean of MSE Loss", color='red')
+
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
