@@ -1,0 +1,6 @@
+Top Cycloid Loss function Converge at:  80
+Top 5% Cycloid Loss function Converge Mean at:  [80, 78, 80, 80, 80, 82, 79, 81, 81, 80]
+Top 5% Cycloid Loss function Converge Mean at:  80.1
+Converge Mean:  83.025
+Top 5% Cycloid Loss Varience:  1.0899999999999999
+MSE Loss Varience:  2.330374999999999
