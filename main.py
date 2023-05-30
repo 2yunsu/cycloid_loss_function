@@ -19,8 +19,8 @@ random.seed(random_seed)  # random
 
 #parameter
 num_epochs = 100
-num_iter = 100
-num_extract = 10
+num_iter = 1000
+num_extract = 50
 
 # Define the input and target
 x = torch.linspace(-2, 2, 100).view(-1,1)
@@ -113,16 +113,16 @@ for i in range(len(mse_weights_list)):
         gradients_diff_mean = gradients_diff_mean_1
     gradients_list.append(gradients_diff_mean)
 
-    #compare gradient graph
-    plt.plot(x_1, cycloid_graph_1_1, label="Cycloid", color="Orange")
-    plt.plot(x_2, cycloid_graph_2_1, color="Orange")
-    plt.plot(mse_weights_list[i], mse_losses[i], label="MSE Loss Function")
-    plt.xlabel("weight")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.show()
-    # plt.savefig('fig1.png')
-    print()
+    # #compare gradient graph
+    # plt.plot(x_1, cycloid_graph_1_1, label="Cycloid", color="Orange")
+    # plt.plot(x_2, cycloid_graph_2_1, color="Orange")
+    # plt.plot(mse_weights_list[i], mse_losses[i], label="MSE Loss Function")
+    # plt.xlabel("weight")
+    # plt.ylabel("Loss")
+    # plt.legend()
+    # plt.show()
+    # # plt.savefig('fig1.png')
+    # print()
 
 min_idx = np.argmin(gradients_list)
 mse_losses_mean_min = mse_losses[min_idx]
@@ -161,13 +161,13 @@ for i in range(len(mse_losses)):
 for i in range(len(converged_10_list)):
     plt.plot(mse_losses[min_idx_10[i]], color='tab:cyan')
 
-for i in range(len(init_converged_10_list)):
-    plt.plot(mse_losses[init_loss_min_idx_10[i]], color='tab:orange')
+# for i in range(len(init_converged_10_list)):
+#     plt.plot(mse_losses[init_loss_min_idx_10[i]], color='tab:orange')
 
 plt.plot(mse_losses_mean, label="Mean of MSE", color='red')
 
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
-# plt.savefig("fig2.png")
-plt.show()
+plt.savefig("fig2.png")
+# plt.show()
