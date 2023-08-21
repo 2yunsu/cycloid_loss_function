@@ -19,8 +19,8 @@ random.seed(random_seed)  # random
 
 #parameter
 num_epochs = 100
-num_iter = 100
-num_extract = 10
+num_iter = 1000
+num_extract = 50
 
 # Define the input and target
 x = torch.linspace(-2, 2, 100).view(-1,1)
@@ -83,7 +83,7 @@ for i in tqdm(range(num_iter)):
     # mse_bias_list.append(crr_bias_list)
 
 gradients_list = []
-for i in range(len(mse_weights_list)):
+for i in tqdm(range(len(mse_weights_list))):
     # Cycloid 초기값
     r = abs(mse_losses[i][-1] - mse_losses[i][0])/2  # Cycloid 그래프의 높이 맞추기
     x_1 = r * (theta_1 - np.sin(theta_1))
