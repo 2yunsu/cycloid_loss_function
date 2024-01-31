@@ -8,6 +8,7 @@ from tqdm import tqdm
 import random
 import pandas as pd
 import warnings
+import pdb
 
 #에러 무시
 warnings.filterwarnings("ignore")
@@ -43,7 +44,7 @@ np.random.seed(random_seed)  # numpy
 random.seed(random_seed)  # random
 
 #parameter
-num_epochs = 100
+num_epochs = 60
 num_iter = 1000
 num_extract = 50
 
@@ -197,9 +198,9 @@ for i in range(len(init_loss_min_idx_10)):
 print("Top 5% Cycloid Loss function Converge Mean at: ", np.mean(converged_10_list))
 print("Top 5% low initial loss Mean: ", np.mean(init_converged_10_list))
 print("Converge Mean: ", np.mean(converged_epochs))
-print("Top 5% Cycloid Loss Varience: ", np.var(converged_10_list))
-print("Top 5% low initial Loss Varience: ", np.var(init_converged_10_list))
-print("MSE Loss Varience: ", np.var(converged_epochs))
+print("Top 5% Cycloid Loss std: ", np.std(converged_10_list))
+print("Top 5% low initial Loss std: ", np.std(init_converged_10_list))
+print("MSE Loss std: ", np.std(converged_epochs))
 
 # Plot the losses
 
@@ -221,5 +222,7 @@ plt.plot(mse_losses_mean, label="Mean of MSE", color='red')
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
-plt.savefig("fig2.png")
+plt.title("Boston Regression Loss per Epoch")
+plt.savefig("/root/cycloid_loss_function/graph/boston_regression_loss_per_epoch.png")
+plt.close()
 # plt.show()

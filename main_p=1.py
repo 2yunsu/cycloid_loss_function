@@ -6,6 +6,10 @@ import numpy as np
 from tqdm import tqdm
 import random
 import pdb
+"""
+p=1일 때 수렴하지 않음을 확인하기 위한 실험
+"""
+
 
 def mse_loss(output, target):
     return torch.mean((output - target) ** 2)
@@ -20,8 +24,9 @@ random.seed(random_seed)  # random
 
 #parameter
 num_epochs = 100
-num_iter = 1000
+num_iter = 10
 num_extract = 50
+mometum_const = 0
 
 # Define the input and target
 x = torch.linspace(-2, 2, 100).view(-1,1)
@@ -44,12 +49,14 @@ for i in tqdm(range(num_iter)):
     model.bias.data.fill_(0)
     init.xavier_normal_(model.weight)
     # Define the optimizer
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=mometum_const)
 
     losses = []
     crr_weights_list = []
     velocities = []
     for epoch in range(num_epochs):
+        # Calculate the difference between previous and current weights
+        # pre_weight = model.weight.data
         # Zero the gradients
         optimizer.zero_grad()
         #weight 추적
@@ -71,9 +78,6 @@ for i in tqdm(range(num_iter)):
         losses.append(loss.item())
         velocities.append(weight_diff_backward.item())
 
-        # Store the loss
-        losses.append(loss.item())
-
         # Check for convergence
         if len(converged_epochs) == i:
             if len(losses) > 1:
@@ -86,7 +90,19 @@ for i in tqdm(range(num_iter)):
     # Store the losses
     mse_losses.append(losses)
     mse_weights_list.append(crr_weights_list)
-    # mse_bias_list.append(crr_bias_list)
+    velocities_list.append(velocities)
+
+# averaged_velocities_list = []
+# for i in range(len(velocities)):
+#     averaged_elements = np.mean([j[i] for j in velocities_list])
+#     averaged_velocities_list.append(averaged_elements)
+
+plt.plot(velocities_list[0], label="velocity")
+plt.title(f"3th order regression velocity, p={optimizer.param_groups[0]['momentum']}")
+plt.xlabel("Epoch")
+plt.ylabel("Velocity")
+plt.savefig(f"/root/cycloid_loss_function/graph/3th_order_regression_velocity_p={mometum_const}.png")
+plt.clf()
 
 gradients_list = []
 for i in tqdm(range(len(mse_weights_list))):
@@ -119,20 +135,16 @@ for i in tqdm(range(len(mse_weights_list))):
         gradients_diff_mean = gradients_diff_mean_1
     gradients_list.append(gradients_diff_mean)
 
-    #compare gradient graph
+    # #사이클로이드 그래프와 weight 그래프 렌더링. 주석 해제하고 디버그 모드로 실행할 것
     # plt.plot(x_1, cycloid_graph_1_1, label="Cycloid", color="Orange")
     # plt.plot(x_2, cycloid_graph_2_1, color="Orange")
     # plt.plot(mse_weights_list[i], mse_losses[i], label="MSE Loss Function")
-    # plt.xlabel("w")
+    # plt.xlabel("weight")
     # plt.ylabel("Loss")
     # plt.legend()
-    # plt.title("MSE Loss Function vs. Cycloid")
-    # # plt.show()
-    # plt.savefig('/root/cycloid_loss_function/graph/Compare_MSE_Cycloid_{}.png'.format(i))
-    # plt.close()
-    # pdb.set_trace()
+    # plt.show()
+    # # plt.savefig('fig1.png')
     # print()
-    
 
 min_idx = np.argmin(gradients_list)
 mse_losses_mean_min = mse_losses[min_idx]
@@ -179,7 +191,11 @@ plt.plot(mse_losses_mean, label="Mean of MSE", color='red')
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
-plt.title("3th order regression Loss per Epoch")
-plt.savefig("/root/cycloid_loss_function/graph/3th_order_regression_loss_per_epoch.png")
-plt.close()
+plt.savefig("3th_order_regression.png")
+
+# Plot the velocities
+
+# plt.show()
+
+
 # plt.show()

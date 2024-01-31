@@ -9,6 +9,11 @@ import random
 import pandas as pd
 import warnings
 
+"""
+학습이 수렴할 떄 minima로 바로 수렴하지 않고 수렴 점 주변을 왔다갔다 하면서 수렴하여,
+이를 해결하기 위해 반쪽짜리 사이클로이드 두 개를 합쳐서 그래프를 그린 코드인 것 같음
+"""
+
 #에러 무시
 warnings.filterwarnings("ignore")
 
@@ -194,9 +199,9 @@ for i in range(len(init_loss_min_idx_10)):
 print("Top 5% Cycloid Loss function Converge Mean at: ", np.mean(converged_10_list))
 print("Top 5% low initial loss Mean: ", np.mean(init_converged_10_list))
 print("Converge Mean: ", np.mean(converged_epochs))
-print("Top 5% Cycloid Loss Varience: ", np.var(converged_10_list))
-print("Top 5% low initial Loss Varience: ", np.var(init_converged_10_list))
-print("MSE Loss Varience: ", np.var(converged_epochs))
+print("Top 5% Cycloid Loss Std.: ", np.std(converged_10_list))
+print("Top 5% low initial Loss Std.: ", np.std(init_converged_10_list))
+print("MSE Loss Std.: ", np.std(converged_epochs))
 
 # Plot the losses
 
@@ -217,5 +222,5 @@ plt.plot(mse_losses_mean, label="Mean of MSE", color='red')
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
-# plt.savefig("fig2.png")
-plt.show()
+plt.savefig("boston_regression_sum.png")
+# plt.show()

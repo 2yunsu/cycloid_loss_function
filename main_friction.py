@@ -7,6 +7,11 @@ from tqdm import tqdm
 import random
 import pdb
 
+"""
+mu가 0보다 큰 경우 살짝 올라간 사이클로이드를 그리는 코드
+"""
+
+
 def mse_loss(output, target):
     return torch.mean((output - target) ** 2)
 
@@ -20,12 +25,15 @@ random.seed(random_seed)  # random
 
 #parameter
 num_epochs = 100
-num_iter = 1000
+num_iter = 10
 num_extract = 50
 
 # Define the input and target
 x = torch.linspace(-2, 2, 100).view(-1,1)
 target = 2 * x ** 3 - 4 * x ** 2 + 3 * x + torch.randn_like(x)
+momentum_const = 0.9
+learning_rate = 0.001
+friction_const = ((1 - momentum_const) / learning_rate)
 # target = 3 * x - 1 + torch.randn_like(x)
 
 # Theta of Cycloid
@@ -36,7 +44,6 @@ theta_2 = torch.linspace(0, 1 * np.pi, num_epochs).view(-1,1)
 mse_losses = []
 mse_weights_list = []
 converged_epochs = []
-velocities_list = []
 
 for i in tqdm(range(num_iter)):
     # Define the model
@@ -44,11 +51,11 @@ for i in tqdm(range(num_iter)):
     model.bias.data.fill_(0)
     init.xavier_normal_(model.weight)
     # Define the optimizer
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum_const)
 
     losses = []
     crr_weights_list = []
-    velocities = []
+    crr_bias_list = []
     for epoch in range(num_epochs):
         # Zero the gradients
         optimizer.zero_grad()
@@ -59,17 +66,12 @@ for i in tqdm(range(num_iter)):
         # Forward pass
         output = model(x)
         loss = mse_loss(output, target)
+
         # Backward pass
         loss.backward()
-        # Compare the weights before and after backward pass
-        weight_before_backward = model.weight.data.clone()
+        crr_weights_list.append(weights.item())
+        # crr_bias_list.append(bias.item())
         optimizer.step()
-        weight_after_backward = model.weight.data.clone()
-        weight_diff_backward = weight_after_backward - weight_before_backward #for measure velocity
-        crr_weights_list.append(weights.item()) #for cycloid graph
-        # Store the loss
-        losses.append(loss.item())
-        velocities.append(weight_diff_backward.item())
 
         # Store the loss
         losses.append(loss.item())
@@ -92,10 +94,10 @@ gradients_list = []
 for i in tqdm(range(len(mse_weights_list))):
     # Cycloid 초기값
     r = abs(mse_losses[i][-1] - mse_losses[i][0])/2  # Cycloid 그래프의 높이 맞추기
-    x_1 = r * (theta_1 - np.sin(theta_1))
-    x_2 = r * (theta_2 - np.sin(theta_2))
-    cycloid_graph_1 = -r * (1 - np.cos(theta_1))
-    cycloid_graph_2 = -r * (1 - np.cos(theta_2))
+    x_1 = r * (theta_1 - np.sin(theta_1)) + (friction_const * r * (1 - np.cos(theta_1)))
+    x_2 = r * (theta_2 - np.sin(theta_2)) + (friction_const * r * (1 - np.cos(theta_2)))
+    cycloid_graph_1 = -r * (1 - np.cos(theta_1)) + (friction_const * r * (theta_1 + np.sin(theta_1)))
+    cycloid_graph_2 = -r * (1 - np.cos(theta_2)) + (friction_const * r * (theta_2 + np.sin(theta_2)))
 
     #위치 조정
     x_1 = (x_1 / x_2[-1]) * (mse_weights_list[i][-1] - mse_weights_list[i][0]) + mse_weights_list[i][0] #x축 맞추기
@@ -120,19 +122,16 @@ for i in tqdm(range(len(mse_weights_list))):
     gradients_list.append(gradients_diff_mean)
 
     #compare gradient graph
-    # plt.plot(x_1, cycloid_graph_1_1, label="Cycloid", color="Orange")
-    # plt.plot(x_2, cycloid_graph_2_1, color="Orange")
-    # plt.plot(mse_weights_list[i], mse_losses[i], label="MSE Loss Function")
-    # plt.xlabel("w")
-    # plt.ylabel("Loss")
-    # plt.legend()
-    # plt.title("MSE Loss Function vs. Cycloid")
-    # # plt.show()
-    # plt.savefig('/root/cycloid_loss_function/graph/Compare_MSE_Cycloid_{}.png'.format(i))
-    # plt.close()
-    # pdb.set_trace()
-    # print()
-    
+    plt.plot(x_1, cycloid_graph_1_1, label="Cycloid", color="Orange")
+    plt.plot(x_2, cycloid_graph_2_1, color="Orange")
+    plt.plot(mse_weights_list[i], mse_losses[i], label="MSE Loss Function")
+    plt.xlabel("weight")
+    plt.ylabel("Loss")
+    plt.legend()
+    # plt.show()
+    plt.savefig('main_mu%3E0.png')
+    print()
+    pdb.set_trace()
 
 min_idx = np.argmin(gradients_list)
 mse_losses_mean_min = mse_losses[min_idx]
@@ -179,7 +178,5 @@ plt.plot(mse_losses_mean, label="Mean of MSE", color='red')
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
-plt.title("3th order regression Loss per Epoch")
-plt.savefig("/root/cycloid_loss_function/graph/3th_order_regression_loss_per_epoch.png")
-plt.close()
+plt.savefig("3th_order_regression.png")
 # plt.show()
