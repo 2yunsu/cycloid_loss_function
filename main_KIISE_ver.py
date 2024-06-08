@@ -18,11 +18,13 @@ torch.cuda.manual_seed_all(random_seed)  # if use multi-GPU
 np.random.seed(random_seed)  # numpy
 random.seed(random_seed)  # random
 
-#hyper parameter
+#parameter
 num_epochs = 100
 num_iter = 1000
 num_extract = 50
-converging_threshold = 0.015
+
+#cuda
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Define the input and target
 x = torch.linspace(-2, 2, 100).view(-1,1)
@@ -36,8 +38,8 @@ theta_2 = torch.linspace(0, 1 * np.pi, num_epochs).view(-1,1)
 # Train the model
 mse_losses = []
 mse_weights_list = []
+# mse_bias_list = []
 converged_epochs = []
-velocities_list = []
 
 for i in tqdm(range(num_iter)):
     # Define the model
@@ -49,7 +51,7 @@ for i in tqdm(range(num_iter)):
 
     losses = []
     crr_weights_list = []
-    velocities = []
+    crr_bias_list = []
     for epoch in range(num_epochs):
         # Zero the gradients
         optimizer.zero_grad()
@@ -60,24 +62,21 @@ for i in tqdm(range(num_iter)):
         # Forward pass
         output = model(x)
         loss = mse_loss(output, target)
+
         # Backward pass
         loss.backward()
-        # Compare the weights before and after backward pass
-        weight_before_backward = model.weight.data.clone()
+        crr_weights_list.append(weights.item())
+        # crr_bias_list.append(bias.item())
         optimizer.step()
-        weight_after_backward = model.weight.data.clone()
-        weight_diff_backward = weight_after_backward - weight_before_backward #for measure velocity
-        
+
         # Store the loss
-        crr_weights_list.append(weights.item()) #for cycloid graph
         losses.append(loss.item())
-        velocities.append(weight_diff_backward.item())
 
         # Check for convergence
         if len(converged_epochs) == i:
             if len(losses) > 1:
-                # gradient = losses[-1] - losses[-2] # 현재 epoch과 이전 epoch의 loss 값 차이
-                if abs(weight_diff_backward) < converging_threshold: # 기울기가 0에 가까워질 때마다 converged_epochs 리스트에 epoch 값을 추가
+                gradient = losses[-1] - losses[-2] # 현재 epoch과 이전 epoch의 loss 값 차이
+                if abs(gradient) < 0.07: # 기울기가 0에 가까워질 때마다 converged_epochs 리스트에 epoch 값을 추가
                     converged_epochs.append(epoch)
                 if epoch == num_epochs - 1: # 한 epoch 끝까지 수렴 안 하면 마지막 값을 수렴점으로 지정
                     converged_epochs.append(epoch)
@@ -85,7 +84,7 @@ for i in tqdm(range(num_iter)):
     # Store the losses
     mse_losses.append(losses)
     mse_weights_list.append(crr_weights_list)
-    velocities_list.append(velocities)
+    # mse_bias_list.append(crr_bias_list)
 
 gradients_list = []
 for i in tqdm(range(len(mse_weights_list))):
@@ -118,18 +117,15 @@ for i in tqdm(range(len(mse_weights_list))):
         gradients_diff_mean = gradients_diff_mean_1
     gradients_list.append(gradients_diff_mean)
 
-    #compare gradient graph
+    # #compare gradient graph
     # plt.plot(x_1, cycloid_graph_1_1, label="Cycloid", color="Orange")
     # plt.plot(x_2, cycloid_graph_2_1, color="Orange")
     # plt.plot(mse_weights_list[i], mse_losses[i], label="MSE Loss Function")
-    # plt.xlabel("w")
+    # plt.xlabel("weight")
     # plt.ylabel("Loss")
     # plt.legend()
-    # plt.title("MSE Loss Function vs. Cycloid")
-    # # plt.show()
-    # plt.savefig('/root/cycloid_loss_function/graph/Compare_MSE_Cycloid_{}.png'.format(i))
-    # plt.close()
-    # pdb.set_trace()
+    # plt.show()
+    # # plt.savefig('fig1.png')
     # print()
 
 min_idx = np.argmin(gradients_list)
@@ -151,36 +147,34 @@ for i in range(len(init_loss_min_idx_10)):
 
 #when converge
 # print("Top Cycloid Loss function Converge at: ", converged_epochs[min_idx])
-print("converging threshold: ", converging_threshold)
 print("Top 5% Cycloid Loss function Converge Mean at: ", np.mean(converged_10_list))
 print("Top 5% low initial loss Mean: ", np.mean(init_converged_10_list))
 print("Converge Mean: ", np.mean(converged_epochs))
-print("Top 5% Cycloid Loss std.: ", np.std(converged_10_list))
-print("Top 5% low initial Loss std.: ", np.std(init_converged_10_list))
-print("MSE Loss std.: ", np.std(converged_epochs))
+print("Top 5% Cycloid Loss Varience: ", np.var(converged_10_list))
+print("Top 5% low initial Loss Varience: ", np.var(init_converged_10_list))
+print("MSE Loss Varience: ", np.var(converged_epochs))
 
 # Plot the losses
 
 # plt.plot(mse_losses_mean_min, label="Cycloid Loss")
-plt.plot(mse_losses[0], label='All of MSE', color='tab:gray')
-plt.plot(mse_losses[min_idx_10[0]], label='Top 5% MSE Similar to Cycloid', color='tab:cyan')
+plt.plot(mse_losses[0], label='All of MSE', color='lightgrey')
+plt.plot(mse_losses[min_idx_10[0]], ":", label='Top 5% MSE Similar to Cycloid', color='tab:cyan')
+plt.plot(mse_losses[init_loss_min_idx_10[0]], label='Top 5% low initial loss', color='tab:red')
 for i in range(len(mse_losses)):
-    plt.plot(mse_losses[i], color='tab:gray')
-
-for i in range(len(converged_10_list)):
-    plt.plot(mse_losses[min_idx_10[i]], color='tab:cyan')
+    plt.plot(mse_losses[i], "-", color='lightgrey')
 
 for i in range(len(init_converged_10_list)):
-    plt.plot(mse_losses[init_loss_min_idx_10[i]], color='tab:orange')
+    plt.plot(mse_losses[init_loss_min_idx_10[i]], "-", color='tab:red')
 
-plt.plot(mse_losses_mean, label="Mean of MSE", color='red')
+for i in range(len(converged_10_list)):
+    plt.plot(mse_losses[min_idx_10[i]], ":", color='tab:cyan')
+
+plt.plot(mse_losses_mean, "-.", label="Mean of MSE", color='k')
 
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
-plt.title("3th order regression Loss per Epoch")
-plt.savefig("/root/cycloid_loss_function/graph/3th_order_regression_loss_per_epoch.png")
-plt.close()
+plt.savefig("/root/cycloid_loss_function/graph/3th_order_regression_loss_per_epoch(KIISE_ver).png")
 # plt.show()
 plt.clf()
 
@@ -189,10 +183,13 @@ for i in range(len(mse_losses)):
 
 z = np.polyfit(gradients_list, converged_epochs, 1)
 p = np.poly1d(z)
-plt.plot(gradients_list, p(gradients_list), "-", color='black', label="Trend Line")
+correlation = np.corrcoef(gradients_list, converged_epochs)
 
+print("correlation: ", correlation)
+plt.plot(gradients_list, p(gradients_list), "-", color='black', label="Trend Line")
 plt.xlabel("Gradient differeces")
 plt.ylabel("Converged epoch")
+plt.legend()
 plt.title("3th oreder regression Losses per Gradient differeces")
-plt.savefig("/root/cycloid_loss_function/graph/3th_oreder_regression_loss_per_converge.png")
+plt.savefig("/root/cycloid_loss_function/graph/3th_oreder_regression_loss_per_converge(KIISE_ver).png")
 plt.close()

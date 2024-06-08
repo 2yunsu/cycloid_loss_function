@@ -1,0 +1,8 @@
+Top 5% Cycloid Loss function Converge Mean at:  80.58
+Top 5% low initial loss Mean:  79.76
+Converge Mean:  83.024
+Top 5% Cycloid Loss Varience:  1.0836
+Top 5% low initial Loss Varience:  0.34240000000000004
+MSE Loss Varience:  2.333424
+correlation:  [[1.         0.87272266]
+ [0.87272266 1.        ]]

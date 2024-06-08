@@ -74,6 +74,7 @@ for i in tqdm(range(num_iter)):
         weight_after_backward = model.weight.data.clone()
         weight_diff_backward = weight_after_backward - weight_before_backward #for measure velocity
         crr_weights_list.append(weights.item()) #for cycloid graph
+        
         # Store the loss
         losses.append(loss.item())
         velocities.append(weight_diff_backward.item())

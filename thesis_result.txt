@@ -1,0 +1,21 @@
+(pyHessian) root@689aba6df767:~/cycloid_loss_function# /opt/conda/envs/pyHessian/bin/python /root/cycloid_loss_function/main.py
+100%|███████████████████████████████████████████████████████████████████████████████| 1000/1000 [00:56<00:00, 17.73it/s]
+100%|█████████████████████████████████████████████████████████████████████████████| 1000/1000 [00:00<00:00, 1358.11it/s]
+converging threshold:  0.015
+Top 5% Cycloid Loss function Converge Mean at:  85.14
+Top 5% low initial loss Mean:  83.38
+Converge Mean:  90.263
+Top 5% Cycloid Loss std.:  2.4084019598065436
+Top 5% low initial Loss std.:  1.6600000000000001
+MSE Loss std.:  2.9356142457754903
+
+(pyHessian) root@689aba6df767:~/cycloid_loss_function# /opt/conda/envs/pyHessian/bin/python /root/cycloid_loss_function/main_KIISE.py
+100%|███████████████████████████████████████████████████████████████████████████████| 1000/1000 [00:34<00:00, 29.32it/s]
+100%|███████████████████████████████████████████████████████████████████████████████| 1000/1000 [00:23<00:00, 43.03it/s]
+converging threshold:  0.015
+Top 5% Cycloid Loss function Converge Mean at:  36.68
+Top 5% low initial loss Mean:  43.44
+Converge Mean:  43.767
+Top 5% Cycloid Loss std:  5.0732238271142736
+Top 5% low initial Loss std:  10.33858791131555
+MSE Loss std:  10.257422239529774
