@@ -98,6 +98,7 @@ for i in tqdm(range(num_iter)):
         # Check for convergence
         if len(converged_epochs) == i:
             if len(losses) > 1:
+                 # KIISE 버전은 종료 조건을 기울기로 두는 데에 비해 이 실험에서는 종료 조건을 속도로 두어, 실험 결과가 달라짐.
                 # gradient = losses[-1] - losses[-2] # 현재 epoch과 이전 epoch의 loss 값 차이
                 if abs(weight_diff_backward) < converging_threshold: # 기울기가 0에 가까워질 때마다 converged_epochs 리스트에 epoch 값을 추가
                     converged_epochs.append(epoch)
