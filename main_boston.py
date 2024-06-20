@@ -45,7 +45,7 @@ random.seed(random_seed)  # random
 
 #parameter
 num_epochs = 60
-num_iter = 100
+num_iter = 1000
 num_extract = 50
 converging_threshold = 0.015
 
@@ -231,7 +231,6 @@ plt.close()
 # plt.show()
 plt.clf()
 
-pdb.set_trace()
 for i in range(len(mse_losses)):
     plt.plot(converged_epochs[i], gradients_list[i], 'o', color='tab:gray')
 
